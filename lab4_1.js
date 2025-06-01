@@ -1,62 +1,53 @@
-function checkPassword(userLogin, userPassword, onSuccess, onError) {
-    // Приводим к нижнему регистру
-    const normalizedLogin = userLogin.toLowerCase();
-    const normalizedPassword = userPassword.toLowerCase();
+function ask_password(login, password, success, failure) {
+    // Приводим логин и пароль к нижнему регистру для единообразия
+    const normalizedLogin = login.toLowerCase();
+    const normalizedPassword = password.toLowerCase();
 
-    // Проверяем количество гласных в пароле
-    const vowelLetters = ['a', 'e', 'i', 'o', 'u', 'y'];
-    const foundVowels = normalizedPassword.split('').filter(char => vowelLetters.includes(char));
-    const isVowelCountCorrect = foundVowels.length === 3;
+    // Проверяем количество гласных в пароле (должно быть ровно 3)
+    const vowelChars = ['a', 'e', 'i', 'o', 'u', 'y']; // Все возможные гласные
+    const passwordVowels = [...normalizedPassword].filter(c => vowelChars.includes(c));
+    const hasCorrectVowelCount = passwordVowels.length === 3;
 
-    // Получаем согласные из логина и пароля
-    const getConsonantLetters = (text) => text.split('').filter(char => !vowelLetters.includes(char));
-    const loginConsonants = getConsonantLetters(normalizedLogin);
-    const passwordConsonants = getConsonantLetters(normalizedPassword);
+    // Функция для извлечения согласных из строки
+    const extractConsonants = s => [...s].filter(c => !vowelChars.includes(c));
+    // Получаем последовательности согласных из логина и пароля
+    const loginConsonantSeq = extractConsonants(normalizedLogin).join('');
+    const passwordConsonantSeq = extractConsonants(normalizedPassword).join('');
 
-    // Проверяем совпадение согласных
-    const areConsonantsCorrect = loginConsonants.join('') === passwordConsonants.join('');
+    // Проверяем, совпадают ли согласные в логине и пароле
+    const consonantsMatch = loginConsonantSeq === passwordConsonantSeq;
 
-    // Определяем результат
-    if (isVowelCountCorrect && areConsonantsCorrect) {
-        onSuccess(normalizedLogin);
+    // Обрабатываем результат проверки
+    if (hasCorrectVowelCount && consonantsMatch) {
+        // Если все условия выполнены - вызываем success
+        success(normalizedLogin);
     } else {
+        // Определяем тип ошибки
         let errorType;
-        if (!isVowelCountCorrect && !areConsonantsCorrect) {
-            errorType = "Everything is wrong";
-        } else if (!isVowelCountCorrect) {
-            errorType = "Wrong number of vowels";
+        if (!hasCorrectVowelCount && !consonantsMatch) {
+            errorType = "Everything is wrong"; // Ошибка и в гласных, и в согласных
+        } else if (!hasCorrectVowelCount) {
+            errorType = "Wrong number of vowels"; // Неправильное количество гласных
         } else {
-            errorType = "Wrong consonants";
+            errorType = "Wrong consonants"; // Согласные не совпадают
         }
-        onError(normalizedLogin, errorType);
+        // Вызываем failure с соответствующим сообщением об ошибке
+        failure(normalizedLogin, errorType);
     }
 }
 
-function executeAuth(login, password) {
-    checkPassword(
+function main(login, password) {
+    // Основная функция, вызывающая ask_password с обработчиками успеха и ошибки
+    ask_password(
         login,
         password,
-        (validLogin) => console.log(`Привет, ${validLogin}!`),
-        (invalidLogin, authError) => console.log(`Кто-то пытался притвориться пользователем ${invalidLogin}, но в пароле допустил ошибку: ${authError.toUpperCase()}.`)
+        // Обработчик успешной авторизации
+        (user) => console.log(`Привет, ${user}!`),
+        // Обработчик ошибки авторизации
+        (user, err) => console.log(`Кто-то пытался притвориться пользователем ${user}, но в пароле допустил ошибку: ${err.toUpperCase()}.`)
     );
 }
 
-// Тест 1 - правильный пароль
-executeAuth("login", "aaalgn");
-// Вывод: Привет, login!
+// Тестовые случаи:
 
-// Тест 2 - правильный пароль (другой вариант)
-executeAuth("login", "luagon");
-// Вывод: Привет, login!
-
-// Тест 3 - неверное количество гласных
-executeAuth("login", "aalgno");
-// Вывод: Кто-то пытался притвориться пользователем login, но в пароле допустил ошибку: WRONG NUMBER OF VOWELS.
-
-// Тест 4 - неверные согласные
-executeAuth("login", "aaalgo");
-// Вывод: Кто-то пытался притвориться пользователем login, но в пароле допустил ошибку: WRONG CONSONANTS.
-
-// Тест 5 - все ошибки
-executeAuth("login", "wrong");
-// Вывод: Кто-то пытался притвориться пользователем login, но в пароле
+// 1. Корректный пар
