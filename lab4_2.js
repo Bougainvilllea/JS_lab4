@@ -30,12 +30,12 @@ function callback () {
     console.log('It is done!')
 }
 
-// Решение с коллбэками (callback hell)
-console.log('start 1');
-readConfig('myConfig', () => {
-    doQuery('select * from cities', () => {
-        httpGet('http://google.com', () => {
-            readFile('README.md', () => {
+console.log('start');
+
+readConfig("myConfig", function() {
+    doQuery('select * from cities', function() {
+        httpGet('http://google.com', function() {
+            readFile('README.md', function() {
                 callback();
                 console.log('end');
             });
@@ -43,27 +43,25 @@ readConfig('myConfig', () => {
     });
 });
 
-// Решение с notification
-// console.log('start 2');
-//
-// const tasks = [
-//     { fn: readConfig, args: ['myConfig'] },
-//     { fn: doQuery, args: ['select * from cities'] },
-//     { fn: httpGet, args: ['http://google.com'] },
-//     { fn: readFile, args: ['README.md'] }
-// ];
-//
-// function executeSequentially(tasks, index = 0) {
-//     if (index >= tasks.length) {
+// console.log('start');
+
+// function notifyReadConfig() {
+//     readConfig("myConfig", notifyDoQuery);
+// }
+
+// function notifyDoQuery() {
+//     doQuery('select * from cities', notifyHttpGet);
+// }
+
+// function notifyHttpGet() {
+//     httpGet('http://google.com', notifyReadFile);
+// }
+
+// function notifyReadFile() {
+//     readFile('README.md', function() {
 //         callback();
 //         console.log('end');
-//         return;
-//     }
-//
-//     const task = tasks[index];
-//     task.fn(...task.args, () => {
-//         executeSequentially(tasks, index + 1);
 //     });
 // }
-//
-// executeSequentially(tasks);
+
+// notifyReadConfig();
